@@ -14,12 +14,13 @@ router.get('/', async (req, res) => {
   res.json(blogs)
 })
 
-router.post('/', async (req, res) => {
+// UPDATED: Added 'next' parameter and pass error to next()
+router.post('/', async (req, res, next) => {
   try {
     const blog = await Blog.create(req.body)
     res.json(blog)
   } catch (error) {
-    return res.status(400).json({ error: error.message })
+    next(error)
   }
 })
 
@@ -32,13 +33,18 @@ router.delete('/:id', blogFinder, async (req, res) => {
   res.status(204).end()
 })
 
-router.put('/:id', blogFinder, async (req, res) => {
-  if (req.body.likes !== undefined) {
-    req.blog.likes = req.body.likes
-    await req.blog.save()
-    res.json(req.blog)
-  } else {
-    res.status(400).json({ error: 'likes property missing' })
+// UPDATED: Added 'next' parameter and try/catch block
+router.put('/:id', blogFinder, async (req, res, next) => {
+  try {
+    if (req.body.likes !== undefined) {
+      req.blog.likes = req.body.likes
+      await req.blog.save()
+      res.json(req.blog)
+    } else {
+      res.status(400).json({ error: 'likes property missing' })
+    }
+  } catch (error) {
+    next(error)
   }
 })
 
