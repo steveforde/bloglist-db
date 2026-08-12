@@ -1,5 +1,6 @@
 const router = require('express').Router()
-const { Blog } = require('../models')
+const { Blog, User } = require('../models')
+const { tokenExtractor } = require('../util/middleware') // Import it
 
 const blogFinder = async (req, res, next) => {
   req.blog = await Blog.findByPk(req.params.id)
@@ -14,10 +15,11 @@ router.get('/', async (req, res) => {
   res.json(blogs)
 })
 
-// UPDATED: Added 'next' parameter and pass error to next()
-router.post('/', async (req, res, next) => {
+// Protect this route with tokenExtractor
+router.post('/', tokenExtractor, async (req, res, next) => {
   try {
-    const blog = await Blog.create(req.body)
+    const user = await User.findByPk(req.decodedToken.id)
+    const blog = await Blog.create({ ...req.body, userId: user.id })
     res.json(blog)
   } catch (error) {
     next(error)
