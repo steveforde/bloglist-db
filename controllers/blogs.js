@@ -30,13 +30,28 @@ router.get('/:id', blogFinder, async (req, res) => {
   res.json(req.blog)
 })
 
-router.delete('/:id', blogFinder, async (req, res) => {
-  await req.blog.destroy()
-  res.status(204).end()
+router.delete('/:id', tokenExtractor, async (req, res, next) => {
+  try {
+    const blog = await Blog.findByPk(req.params.id)
+    
+    if (!blog) {
+      return res.status(404).json({ error: 'blog not found' })
+    }
+
+    // Check if the logged-in user owns the blog
+    if (blog.userId !== req.decodedToken.id) {
+      return res.status(403).json({ error: 'unauthorized to delete this blog' })
+    }
+
+    await blog.destroy()
+    return res.status(204).end()
+  } catch (error) {
+    next(error)
+  }
 })
 
 // UPDATED: Added 'next' parameter and try/catch block
-router.put('/:id', blogFinder, async (req, res, next) => {
+router.put('/:id', tokenExtractor, blogFinder, async (req, res, next) => {
   try {
     if (req.body.likes !== undefined) {
       req.blog.likes = req.body.likes
