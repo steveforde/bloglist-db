@@ -1,6 +1,7 @@
 const router = require('express').Router()
 const { Blog, User } = require('../models')
-const { tokenExtractor } = require('../util/middleware') // Import it
+const { tokenExtractor } = require('../util/middleware')
+const { Op } = require('sequelize')
 
 const blogFinder = async (req, res, next) => {
   req.blog = await Blog.findByPk(req.params.id)
@@ -11,16 +12,24 @@ const blogFinder = async (req, res, next) => {
 }
 
 router.get('/', async (req, res) => {
+  const where = {}
+
+  if (req.query.search) {
+    where.title = {
+      [Op.iLike]: `%${req.query.search}%`
+    }
+  }
+
   const blogs = await Blog.findAll({
     include: {
       model: User,
       attributes: ['username', 'name']
-    }
+    },
+    where
   })
   res.json(blogs)
 })
 
-// Protect this route with tokenExtractor
 router.post('/', tokenExtractor, async (req, res, next) => {
   try {
     const user = await User.findByPk(req.decodedToken.id)
@@ -43,7 +52,6 @@ router.delete('/:id', tokenExtractor, async (req, res, next) => {
       return res.status(404).json({ error: 'blog not found' })
     }
 
-    // Check if the logged-in user owns the blog
     if (blog.userId !== req.decodedToken.id) {
       return res.status(403).json({ error: 'unauthorized to delete this blog' })
     }
@@ -55,7 +63,6 @@ router.delete('/:id', tokenExtractor, async (req, res, next) => {
   }
 })
 
-// UPDATED: Added 'next' parameter and try/catch block
 router.put('/:id', tokenExtractor, blogFinder, async (req, res, next) => {
   try {
     if (req.body.likes !== undefined) {
