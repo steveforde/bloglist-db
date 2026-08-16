@@ -7,11 +7,13 @@ const blogsRouter = require('./controllers/blogs')
 const usersRouter = require('./controllers/users') // ADD THIS
 const { errorHandler } = require('./util/middleware')
 const loginRouter = require('./controllers/login')
+const authorsRouter = require('./controllers/authors')
 
 app.use(express.json())
 
 app.use('/api/blogs', blogsRouter)
 app.use('/api/users', usersRouter) // ADD THIS
+app.use('/api/authors', authorsRouter) // ADD THIS
 app.use('/api/login', loginRouter) // ADD THIS
 
 app.use(errorHandler)
