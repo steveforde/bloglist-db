@@ -5,14 +5,16 @@ const url = process.env.TESTING === 'true'
   ? TEST_DATABASE_URL 
   : DATABASE_URL
 
-const sequelize = new Sequelize(url, {
+const useSSL = !url.includes('sslmode=disable')
+
+const sequelize = new Sequelize(url, useSSL ? {
   dialectOptions: {
     ssl: {
       require: true,
       rejectUnauthorized: false
     }
-  },
-})
+  }
+} : {})
 
 const connectToDatabase = async () => {
   try {
