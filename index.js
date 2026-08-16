@@ -4,17 +4,23 @@ const app = express()
 const { PORT } = require('./util/config')
 const { connectToDatabase } = require('./util/db')
 const blogsRouter = require('./controllers/blogs')
-const usersRouter = require('./controllers/users') // ADD THIS
+const usersRouter = require('./controllers/users')
 const { errorHandler } = require('./util/middleware')
 const loginRouter = require('./controllers/login')
 const authorsRouter = require('./controllers/authors')
+const resetRouter = require('./controllers/reset')
 
 app.use(express.json())
 
+app.get('/', (req, res) => {
+  res.status(200).send('OK')
+})
+
 app.use('/api/blogs', blogsRouter)
-app.use('/api/users', usersRouter) // ADD THIS
-app.use('/api/authors', authorsRouter) // ADD THIS
-app.use('/api/login', loginRouter) // ADD THIS
+app.use('/api/users', usersRouter)
+app.use('/api/reset', resetRouter)
+app.use('/api/authors', authorsRouter)
+app.use('/api/login', loginRouter)
 
 app.use(errorHandler)
 
@@ -26,3 +32,4 @@ const start = async () => {
 }
 
 start()
+

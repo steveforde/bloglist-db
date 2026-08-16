@@ -1,5 +1,6 @@
 const router = require('express').Router()
-const { User, Blog } = require('../models') // Added Blog here
+const { User, Blog } = require('../models')
+const bcrypt = require('bcrypt')
 
 router.get('/', async (req, res) => {
   const users = await User.findAll({
@@ -11,32 +12,19 @@ router.get('/', async (req, res) => {
   res.json(users)
 })
 
-router.post('/', async (req, res, next) => {
-  try {
-    const { username, name } = req.body
-    const user = await User.create({ username, name })
-    res.json(user)
-  } catch (error) {
-    next(error)
-  }
-})
+router.post('/', async (req, res) => {
+  const { username, name, password } = req.body
 
-router.put('/:username', async (req, res, next) => {
-  try {
-    const user = await User.findOne({
-      where: { username: req.params.username }
-    })
+  const saltRounds = 10
+  const passwordHash = await bcrypt.hash(password, saltRounds)
 
-    if (user) {
-      user.name = req.body.name
-      await user.save()
-      res.json(user)
-    } else {
-      res.status(404).end()
-    }
-  } catch (error) {
-    next(error)
-  }
+  const user = await User.create({
+    username,
+    name,
+    passwordHash,
+  })
+
+  res.status(201).json(user)
 })
 
 module.exports = router
