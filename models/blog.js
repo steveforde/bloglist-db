@@ -10,19 +10,36 @@ Blog.init({
     autoIncrement: true
   },
   author: {
-    type: DataTypes.TEXT
+    type: DataTypes.STRING
   },
   url: {
-    type: DataTypes.TEXT,
+    type: DataTypes.STRING,
     allowNull: false
   },
   title: {
-    type: DataTypes.TEXT,
+    type: DataTypes.STRING,
     allowNull: false
   },
   likes: {
     type: DataTypes.INTEGER,
     defaultValue: 0
+  },
+  year: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    validate: {
+      min: {
+        args: [1991],
+        msg: 'Year must be at least 1991'
+      },
+      max: {
+        args: [2026],
+        msg: 'Year cannot be greater than the current year'
+      },
+      isInt: {
+        msg: 'Year must be an integer'
+      }
+    }
   }
 }, {
   sequelize,
