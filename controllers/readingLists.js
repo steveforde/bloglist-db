@@ -1,22 +1,27 @@
 const router = require('express').Router()
-const { ReadingList, User, Blog } = require('../models')
+const { ReadingList } = require('../models')
+const { tokenExtractor } = require('../util/middleware')
 
-router.post('/', async (req, res, next) => {
-  try {
-    const { userId, blogId } = req.body
+router.post('/', async (req, res) => {
+  const readingList = await ReadingList.create(req.body)
+  res.json(readingList)
+})
 
-    const user = await User.findByPk(userId)
-    const blog = await Blog.findByPk(blogId)
+router.put('/:id', tokenExtractor, async (req, res) => {
+  const readingListItem = await ReadingList.findByPk(req.params.id)
 
-    if (!user || !blog) {
-      return res.status(400).json({ error: 'Invalid userId or blogId' })
-    }
-
-    const readingList = await ReadingList.create({ userId, blogId })
-    res.json(readingList)
-  } catch (error) {
-    next(error)
+  if (!readingListItem) {
+    return res.status(404).json({ error: 'reading list item not found' })
   }
+
+  if (readingListItem.userId !== req.decodedToken.id) {
+    return res.status(401).json({ error: 'operation not allowed' })
+  }
+
+  readingListItem.read = req.body.read
+  await readingListItem.save()
+  
+  res.json(readingListItem)
 })
 
 module.exports = router
