@@ -9,6 +9,7 @@ const { errorHandler } = require('./util/middleware')
 const loginRouter = require('./controllers/login')
 const authorsRouter = require('./controllers/authors')
 const resetRouter = require('./controllers/reset')
+const readingListsRouter = require('./controllers/readingLists')
 
 app.use(express.json())
 
@@ -21,6 +22,7 @@ app.use('/api/users', usersRouter)
 app.use('/api/reset', resetRouter)
 app.use('/api/authors', authorsRouter)
 app.use('/api/login', loginRouter)
+app.use('/api/readinglists', readingListsRouter)
 
 app.use(errorHandler)
 
