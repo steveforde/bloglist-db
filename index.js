@@ -21,10 +21,11 @@ app.use('/api/blogs', blogsRouter)
 app.use('/api/users', usersRouter)
 app.use('/api/reset', resetRouter)
 app.use('/api/authors', authorsRouter)
-app.use('/api/login', loginRouter)
+app.use('/api', loginRouter)
 app.use('/api/readinglists', readingListsRouter)
 
 app.use(errorHandler)
+
 
 const start = async () => {
   await connectToDatabase()

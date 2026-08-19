@@ -1,14 +1,16 @@
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 const router = require('express').Router()
-const { User } = require('../models')
 const { SECRET } = require('../util/config')
+const User = require('../models/user')
+const Session = require('../models/session')
+const { tokenExtractor } = require('../util/middleware')
 
-router.post('/', async (request, response) => {
+router.post('/login', async (request, response) => {
   const { username, password } = request.body
 
   const user = await User.findOne({
-    where: { username }
+    where: { username: username }
   })
 
   const passwordCorrect = user === null
@@ -21,6 +23,12 @@ router.post('/', async (request, response) => {
     })
   }
 
+  if (user.disabled) {
+    return response.status(401).json({
+      error: 'account disabled, please contact admin'
+    })
+  }
+
   const userForToken = {
     username: user.username,
     id: user.id,
@@ -28,7 +36,26 @@ router.post('/', async (request, response) => {
 
   const token = jwt.sign(userForToken, SECRET)
 
-  response.status(200).send({ token, username: user.username, name: user.name })
+  // Save active session to database
+  await Session.create({
+    userId: user.id,
+    token: token
+  })
+
+  response
+    .status(200)
+    .send({ token, username: user.username, name: user.name })
+})
+
+// Logout route
+router.delete('/logout', tokenExtractor, async (request, response) => {
+  await Session.destroy({
+    where: {
+      userId: request.decodedToken.id,
+      token: request.token
+    }
+  })
+  response.status(204).end()
 })
 
 module.exports = router

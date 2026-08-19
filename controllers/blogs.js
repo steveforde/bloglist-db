@@ -4,11 +4,15 @@ const { tokenExtractor } = require('../util/middleware')
 const { Op } = require('sequelize')
 
 const blogFinder = async (req, res, next) => {
-  req.blog = await Blog.findByPk(req.params.id)
-  if (!req.blog) {
-    return res.status(404).end()
+  try {
+    req.blog = await Blog.findByPk(req.params.id)
+    if (!req.blog) {
+      return res.status(404).json({ error: 'blog not found' })
+    }
+    next()
+  } catch (error) {
+    next(error)
   }
-  next()
 }
 
 router.get('/', async (req, res) => {
