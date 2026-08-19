@@ -21,7 +21,8 @@ before(async () => {
   const newBlog = {
     title: 'Test Blog for Reading List',
     author: 'Reading List Author',
-    url: 'https://example.com/reading-list-blog'
+    url: 'https://example.com/reading-list-blog',
+    year: 2026
   }
   
   const blogResponse = await axios.post(`${baseUrl}/blogs`, newBlog, {
